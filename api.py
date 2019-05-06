@@ -2,6 +2,7 @@ import json
 import requests
 import csv
 import configparser
+import sys
 
 
 def login(base_url, api_login, api_password):
@@ -55,11 +56,31 @@ headers = {
 }
 
 
-config = configparser.ConfigParser()
-config.read('associate.ini')
-sections = config.sections()
+# config = configparser.ConfigParser()
+# config.read('associate.ini')
+# sections = config.sections()
 
-account_info = get_account_info(config['input']['AssociateIds'])
+if len(sys.argv) != 2:
+    print("Usage: python api.py file_name_with_path")
+    sys.exit(1)
+
+associate_ids = ""
+if sys.argv[1] != "":
+    with open(sys.argv[1]) as csv_file:
+
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                print(f'Column name is {", ".join(row)}')
+                line_count += 1
+            else:
+                associate_ids = row[0] + "," + associate_ids
+                line_count += 1
+        associate_ids = associate_ids[0:-1]
+        print(f'associate are {associate_ids}')
+
+account_info = get_account_info(associate_ids)
 
 if account_info is not None:
 
@@ -78,4 +99,4 @@ if account_info is not None:
         writer.writerow(k)
     csv_file.close()
 else:
-    print('[!] Request Failed')
+print('[!] Request Failed')
